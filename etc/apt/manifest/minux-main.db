@@ -1,4 +1,4 @@
-AIF=true
+﻿AIF=true
 https://raw.githubusercontent.com/JosunLP/ReMinux/main/etc/apt/
 version=3.1.0
 author=minux-team
@@ -156,6 +156,7 @@ php=false
 /bin/peripherals.sh
 /bin/rs.sh
 /bin/top.sh
+/bin/neofetch.sh
 /bin/colortest.sh
 /bin/speak.sh
 /bin/ping.sh

@@ -4,7 +4,78 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+
+- `neofetch` command (`/bin/neofetch.sh`): classic system-info display
+  with an ASCII logo, info panel (OS, user, uptime, disk, peripherals,
+  in-game time), and a 16-colour palette bar. Available immediately via
+  alias; registered in the `minux-main` package manifest for future
+  installs.
+
+### Changed
+
+- **Boot splash** (`startup.lua`): the initial screen now shows a centred
+  `ReMinux vX.Y.Z` banner with a spinner animation before handing off to
+  `init.sys`.
+- **Boot screen** (`boot/init.sys`): complete visual overhaul.
+  - Every status line uses a dot-fill layout
+    (`Label ......... [value]`) that auto-adjusts to any terminal
+    width instead of hard-coded column offsets.
+  - Kernel load, sanity check, and DHCP now show a live `|/-\` spinner
+    on the same line; the line is rewritten in place with the final result
+    once the step completes.
+  - Header and footer use cyan `=` separators via the new `centeredLine()`
+    and `divider()` helpers.
+  - The post-login welcome section shows a cyan-framed prompt box with
+    available commands listed inline.
+  - The first-run verification screen shows a spinner during the check
+    and reports pass/fail using the same dot-fill format.
+  - Crash/repair shell message is clearer: includes stage number, bullet
+    list of causes, and correct config hint for disabling the crash
+    handler.
+- **`apt`** (`bin/apt.sh`):
+  - Install, remove, and update operations now print a progress line
+    (`Installing pkg ......... [done]` / `[fail]`) instead of appearing
+    to hang silently.
+  - Help output is sectioned and colour-coded (cyan section headers, gray
+    descriptions).
+  - `apt list-available` (`-la`) shows a `[done]`/`[fail]` progress line
+    while fetching the package list.
+  - **Bug fix**: `apt version` / `apt -v` without a package name now
+    returns a clear error instead of passing `nil` to `apt.packageinfo`.
+  - **Bug fix**: `apt -U` (force-update-all) now correctly requires admin
+    privileges, matching all other write operations.
+- **`doctor`** (`bin/doctor.sh`):
+  - A brief scan animation plays before findings are listed.
+  - Findings use short symbols (`!!` error, `??` warning, `++` fixed) in
+    matching colours instead of the verbose `[ERROR]`/`[WARNING]` labels.
+  - Summary section is framed with a separator and lists each count on its
+    own coloured line.
+- **`top`** (`bin/top.sh`):
+  - Output is structured into labelled sections (`System`, `Storage`,
+    `Peripherals`, `Network`) with separator lines.
+  - Disk free space is shown alongside an ASCII usage bar
+    (`[######....]`) and the value colour shifts lime → yellow → red as
+    free space drops.
+  - The current user is shown with an `[admin]` badge in yellow when
+    applicable.
+  - Version, in-game day/time, and host binary string are included in the
+    system section.
+- **`config`** (`bin/config.sh`):
+  - `config` (no args) uses dot-fill alignment for all settings and
+    colour-codes values (lime = enabled, gray = disabled, cyan = network).
+  - `config <key>` help block is framed with a separator line.
+  - Help output is sectioned with colour-coded examples.
+- **`login`** (`bin/login.sh`):
+  - When called interactively (no args), a header shows the active auth
+    backend.
+  - A brief spinner plays during credential verification.
+  - Prompts and result lines are consistently indented.
+- **`welcome.sys`**: a black status bar is drawn at the bottom of the
+  welcome screen showing the current user and a command hint.
+
 ### Fixed
+
 - First-run post-install verification ("Postinstall-Check") no longer
   fails on a clean install. The shipped per-package manifests under
   `/etc/apt/manifest/` are now bootstrapped into `/etc/apt/list/` before
@@ -15,13 +86,15 @@ All notable changes to this project will be documented in this file.
   installed system can be refreshed from the network without first
   hitting "installed package missing local manifest" failures.
 
-### Added
+### API
+
 - `apt.postinstall()` and `apt.bootstrapinstalled()` API entries on the
   `apt` module for local-only verification and manifest seeding.
 
 ## [3.1.0] - 2026-05-10
 
 ### Added
+
 - `apt help` / `-h` / `--help` / `?` now prints a structured usage
   block listing every command, its short flag, and which actions
   require admin privileges.
@@ -47,6 +120,7 @@ All notable changes to this project will be documented in this file.
   non-interactive behaviour.
 
 ### Changed
+
 - The boot welcome banner artwork (`etc/minux-main/welcome/mnx.nfp`) now
   reads `reminux` instead of `minux` while keeping the original blocky
   pixel-font style; `welcome.sys` shifts the banner left so the wider
@@ -97,19 +171,23 @@ All notable changes to this project will be documented in this file.
 ## [3.0.2] - 2026-05-08
 
 ### Fixed
+
 - Stopped an endless first-run installation verify loop in the boot flow.
 - Fixed wrapper failure return values so shell control flow (`&&` / `||`) behaves correctly for `cat`, `head`, `less`, `tail`, `man`, `mktemp`, and `service`.
 
 ### Added
+
 - Added manual pages for `bash`, `edit`, `halt`, `lock`, `makeboot`, `newtab`, `restart`, `useradd`, and `userdel`.
 
 ### Changed
+
 - Bumped project package version to 3.0.2.
 - Added and packaged `CHANGELOG.md` in the release manifest.
 
 ## [3.0.1] - 2026-05-08
 
 ### Changed
+
 - Updated in-system branding from **Minux** to **ReMinux**.
 - Updated installer and APT release metadata handling for the 3.0.1 release path.
 - Refreshed manual pages for `apt`, `chat`, `config`, `ls`, `man`, `ping`, `search`, and `usermod`.

@@ -1,210 +1,242 @@
 local bash     = "/etc/minux-main/workspace/shell.lua"
 local oldshell = "/rom/programs/shell.lua"
 local crashstage = 0
-local cursorhor, cursorver = term.getCursorPos()
 
--- Crash handler helpers
+-- === Visual & animation helpers ===
+
+local SPIN_FRAMES = { "|", "/", "-", "\\" }
+
+local function withColor(color, fn)
+  if term.isColor() then term.setTextColor(color) end
+  fn()
+  if term.isColor() then term.setTextColor(colors.white) end
+end
+
+local function fullWidth(char)
+  local w = term.getSize()
+  return string.rep(char, w)
+end
+
+local function centeredLine(text, char, color)
+  char = char or "="
+  local w = term.getSize()
+  local content = " " .. text .. " "
+  local pad = math.max(0, w - #content)
+  local left  = math.floor(pad / 2)
+  local right = pad - left
+  withColor(color or colors.white, function()
+    print(string.rep(char, left) .. content .. string.rep(char, right))
+  end)
+end
+
+local function divider(char, color)
+  withColor(color or colors.white, function()
+    print(fullWidth(char or "-"))
+  end)
+end
+
+local function spinAt(col, row, count)
+  withColor(colors.yellow, function()
+    for i = 1, (count or 6) do
+      term.setCursorPos(col, row)
+      write(SPIN_FRAMES[((i - 1) % #SPIN_FRAMES) + 1])
+      os.sleep(0.06)
+    end
+  end)
+end
+
+-- Print a boot status line: "  Label ........ [ value ]"
+local function bootLine(label, value, isOk)
+  local w = term.getSize()
+  local valStr = "[ " .. tostring(value) .. " ]"
+  local prefix = "  " .. label
+  local dotsLen = math.max(1, w - #prefix - #valStr - 2)
+  write(prefix .. " " .. string.rep(".", dotsLen) .. " ")
+  withColor(isOk and colors.lime or colors.orange, function()
+    print(valStr)
+  end)
+end
+
+-- === Crash handler ===
 
 local function getCrashHandler(stage)
-	local path = "/temp/minux/boot/fail" .. stage .. ".tmp"
-	if fs.exists(path) then
-		local tempfile = fs.open(path, "r")
-		local value = tonumber(tempfile.readLine()) or 0
-		tempfile.close()
-		return value
-	end
-	return 0
+  local path = "/temp/minux/boot/fail" .. stage .. ".tmp"
+  if fs.exists(path) then
+    local tempfile = fs.open(path, "r")
+    local value = tonumber(tempfile.readLine()) or 0
+    tempfile.close()
+    return value
+  end
+  return 0
 end
 
 local function setCrashHandler(stage, value)
-local dir = "/temp/minux/boot/"
-if fs.exists(dir) == false then fs.makeDir(dir) end
-local tempfile = fs.open(dir .. "fail" .. stage .. ".tmp", "w")
-tempfile.writeLine(value)
-tempfile.close()
+  local dir = "/temp/minux/boot/"
+  if not fs.exists(dir) then fs.makeDir(dir) end
+  local tempfile = fs.open(dir .. "fail" .. stage .. ".tmp", "w")
+  tempfile.writeLine(value)
+  tempfile.close()
 end
 
 local function repairShell(stage)
-local stageNumber = tonumber(stage)
-local displayStage = stageNumber or tostring(stage)
-term.clear()
-term.setCursorPos(1, 1)
-if stageNumber == 1 then
-print("Kernel panic")
-else
-print("ReMinux-V:" .. _G.version .. " Init fail")
-end
-print("Init stage:" .. displayStage)
-if stageNumber == 4 then
-print(" ")
-print("Causes:")
-print("1) your UI or bootup program is broken")
-print("2) you shut down the computer with the button")
-print("3) the Minecraft Chunk reloaded")
-print("You can disable this stage using 'config'")
-end
-print(" ")
-print("Hit Enter to launch repair shell")
-read()
-setCrashHandler("1", "0")
-shell.run(oldshell)
-end
-
-local function screenpos(row)
-if pocket or turtle then
-term.setCursorPos(15, row)
-else
-term.setCursorPos(40, row)
-end
+  local stageNumber = tonumber(stage)
+  local displayStage = stageNumber or tostring(stage)
+  term.clear()
+  term.setCursorPos(1, 1)
+  divider("!", colors.red)
+  if stageNumber == 1 then
+    withColor(colors.red, function() print("  KERNEL PANIC") end)
+  else
+    withColor(colors.red, function()
+      print("  ReMinux init failure  (stage " .. tostring(displayStage) .. ")")
+    end)
+  end
+  divider("!", colors.red)
+  if _G.version then print("  Version: " .. _G.version) end
+  if stageNumber == 4 then
+    print("")
+    withColor(colors.yellow, function() print("  Possible causes:") end)
+    print("    1) UI or boot program is broken")
+    print("    2) Computer shut down mid-boot")
+    print("    3) Minecraft chunk reloaded")
+    print("")
+    print("  Disable:  config crashhandler disabled")
+  end
+  print("")
+  withColor(colors.gray, function() write("  Press Enter to open repair shell...") end)
+  read()
+  setCrashHandler("1", "0")
+  shell.run(oldshell)
 end
 
--- Print a labelled boot status line with optional green/red colouring.
--- `isOk` determines the colour: true → green, false → red.
-local function printBootItem(label, value, isOk)
-local _, row = term.getCursorPos()
-print(label .. ":")
-if term.isColor() then
-term.setTextColor(isOk and colors.green or colors.red)
-end
-screenpos(row)
-print("[" .. tostring(value) .. "]")
-if term.isColor() then
-term.setTextColor(colors.white)
-end
-end
-
--- Check and advance a crash-handler stage; call the repair shell if the
--- machine is stuck at a failing stage.
 local function checkCrashStage(stage)
-	local stageId = tostring(stage)
-	local stageNumber = tonumber(stageId)
-	crashstage = getCrashHandler(stageId)
-	if crashstage >= 2 then
-		setCrashHandler(stageId, "0")
-		repairShell(stageNumber or stageId)
-	else
-		setCrashHandler(stageId, tostring(crashstage + 1))
-	end
+  local stageId = tostring(stage)
+  local stageNumber = tonumber(stageId)
+  crashstage = getCrashHandler(stageId)
+  if crashstage >= 2 then
+    setCrashHandler(stageId, "0")
+    repairShell(stageNumber or stageId)
+  else
+    setCrashHandler(stageId, tostring(crashstage + 1))
+  end
 end
 
--- Boot header
+-- === Boot sequence ===
 
-if pocket or turtle then
-print("-----------ReMinux----------")
-else
-print("-------------------ReMinux-------------------------")
-end
+centeredLine("ReMinux", "=", colors.cyan)
 
 checkCrashStage("1")
 
-cursorhor, cursorver = term.getCursorPos()
-print("Kernel:")
+-- Kernel load with brief spinner
+write("  Kernel  ")
+local kx, kernelRow = term.getCursorPos()
+spinAt(kx, kernelRow, 8)
+
 os.loadAPI("/etc/api/minux")
 os.loadAPI("/etc/api/apt")
 os.loadAPI("/etc/minux-main/sys/menu.lua")
 _G.expect = dofile("/rom/modules/main/cc/expect.lua")
 
--- Read and display the installed version.
 local dbfile = "/etc/apt/list/minux-main.db"
 if fs.exists(dbfile) then
-local versionLine = minux.findline(dbfile, "version=")
-local versionData = minux.printline(dbfile, versionLine)
-_G.version = string.sub(versionData, 9)
+  local versionLine = minux.findline(dbfile, "version=")
+  local versionData = minux.printline(dbfile, versionLine)
+  _G.version = string.sub(versionData, 9)
 else
-_G.version = "Cleaninstall"
+  _G.version = "Cleaninstall"
 end
-if term.isColor() then term.setTextColor(colors.green) end
-screenpos(cursorver)
-print("[V:" .. _G.version .. "]")
-if term.isColor() then term.setTextColor(colors.white) end
 
+term.setCursorPos(1, kernelRow)
+term.clearLine()
+bootLine("Kernel", "V:" .. _G.version, true)
+
+-- Aliases
 if fs.exists("/boot/alias.ls") then
-shell.run("/boot/alias.ls")
+  shell.run("/boot/alias.ls")
+  bootLine("Aliases", "loaded", true)
 else
-minux.debug("/boot/alias.ls not found - core aliases unavailable until APT regenerates it; boot continues with shell-builtin commands only", "minux")
+  bootLine("Aliases", "missing", false)
+  minux.debug("/boot/alias.ls not found - core aliases unavailable until APT regenerates it", "minux")
 end
 
--- Sanity check (update the same status line once complete)
-printBootItem("Sanitycheck", "Running", true)
-local _, sanityRow = term.getCursorPos()
+-- Sanity check with spinner
+local sanityPreRow
+do
+  write("  Sanity  ")
+  local sx, sy = term.getCursorPos()
+  sanityPreRow = sy
+  spinAt(sx, sy, 4)
+end
 minux.sanitycheck()
-screenpos(sanityRow - 1)
-if term.isColor() then term.setTextColor(colors.green) end
-io.write("[Cleared]")
-if term.isColor() then term.setTextColor(colors.white) end
-print("")
+term.setCursorPos(1, sanityPreRow)
+term.clearLine()
+bootLine("Sanity", "cleared", true)
 
 -- Peripheral detection
-
 _G.modemside = minux.perfind("modem")
-printBootItem("Modem", _G.modemside, _G.modemside ~= "NONE")
+bootLine("Modem", _G.modemside, _G.modemside ~= "NONE")
 if _G.modemside ~= "NONE" then
-rednet.open(_G.modemside)
+  rednet.open(_G.modemside)
 end
 
 _G.diskside = minux.perfind("drive")
-printBootItem("Diskdrive", _G.diskside, _G.diskside ~= "NONE")
+bootLine("Diskdrive", _G.diskside, _G.diskside ~= "NONE")
 
 _G.monitorside = minux.perfind("monitor")
-printBootItem("Monitor", _G.monitorside, _G.monitorside ~= "NONE")
+bootLine("Monitor", _G.monitorside, _G.monitorside ~= "NONE")
 if _G.monitorside ~= "NONE" then
-_G.monitor = peripheral.wrap(_G.monitorside)
+  _G.monitor = peripheral.wrap(_G.monitorside)
 end
 
 _G.printerside = minux.perfind("printer")
-printBootItem("Printer", _G.printerside, _G.printerside ~= "NONE")
+bootLine("Printer", _G.printerside, _G.printerside ~= "NONE")
 if _G.printerside ~= "NONE" then
-_G.printer = peripheral.wrap(_G.printerside)
+  _G.printer = peripheral.wrap(_G.printerside)
 end
 
 _G.speakerside = minux.perfind("speaker")
-printBootItem("Speaker", _G.speakerside, _G.speakerside ~= "NONE")
+bootLine("Speaker", _G.speakerside, _G.speakerside ~= "NONE")
 
+-- Network DHCP
 _G.server = "[none]"
 if minux.getconfig("network") == "enabled" then
-print("DHCP:")
-local _, dhcpRow = term.getCursorPos()
-shell.run("/boot/network/dhcp.sys")
-local serverFound = _G.server ~= "[none]"
-if term.isColor() then
-term.setTextColor(serverFound and colors.green or colors.red)
-end
-screenpos(dhcpRow - 1)
-if serverFound then
-print("[" .. _G.server .. "]")
-else
-print(_G.server)
-end
-if term.isColor() then term.setTextColor(colors.white) end
+  local _, dhcpRow = term.getCursorPos()
+  withColor(colors.gray, function() write("  DHCP  [ connecting ]") end)
+  print()
+  shell.run("/boot/network/dhcp.sys")
+  term.setCursorPos(1, dhcpRow)
+  term.clearLine()
+  local serverFound = _G.server ~= "[none]"
+  bootLine("DHCP", serverFound and _G.server or "no server", serverFound)
 end
 
--- System settings display
-
+-- System settings
 local crashCfg = minux.getconfig("crashhandler")
-printBootItem("Crashhandler", crashCfg, crashCfg == "enabled")
+bootLine("Crashhandler", crashCfg, crashCfg == "enabled")
 
 setCrashHandler("1", "0")
 checkCrashStage("2")
 
 _G.debugmode = minux.getconfig("debug")
-printBootItem("Debug system", _G.debugmode, _G.debugmode == "disabled")
+bootLine("Debug", _G.debugmode, _G.debugmode == "disabled")
 minux.debug("Debug system loaded", "minux")
 
 local loginMode = minux.getconfig("login")
-printBootItem("Login mode", loginMode, loginMode ~= "disabled")
+bootLine("Login", loginMode, loginMode ~= "disabled")
 
 local uiMode = minux.getconfig("ui")
-printBootItem("UI mode", uiMode, true)
+bootLine("UI", uiMode, true)
 
 local updateMode = minux.getconfig("update")
-printBootItem("Updates", updateMode, updateMode ~= "disabled")
+bootLine("Updates", updateMode, updateMode ~= "disabled")
+
+divider("=", colors.cyan)
 
 -- First-run detection
-
 local firstupdate = false
 local firstrunFile = "/usr/minux-main/data/firstrun.db"
-if fs.exists(firstrunFile) == false then
-firstupdate = true
+if not fs.exists(firstrunFile) then
+  firstupdate = true
 end
 
 _G.shell = shell
@@ -221,184 +253,195 @@ minux.debug("resetting crash handler stage 3", "minux")
 setCrashHandler("3", "0")
 
 if minux.getconfig("crashhandler") == "enabled" then
-checkCrashStage("4")
+  checkCrashStage("4")
 end
 
 minux.debug("running runonce services", "minux")
 minux.runServiceTrigger("boot", "runonce")
 
 -- Login
-
-if pocket or turtle then
-print("--------------------------")
-else
-print("---------------------------------------------------")
-end
 minux.debug("checking login settings", "minux")
 local loginType = minux.getconfig("login")
 if loginType ~= "disabled" then
-if fs.exists("/etc/minux-main/sys/menulogin.sys") and term.isColor() and not turtle then
-minux.debug("running gui login for pc", "minux")
-while _G.validlogin ~= true do
-term.setBackgroundColor(colors.black)
-term.setTextColor(colors.white)
-shell.run("/etc/minux-main/sys/menulogin.sys")
-end
-end
-minux.debug("running login.sh", "minux")
-local loginAttempts = 0
-while _G.validlogin ~= true do
-loginAttempts = loginAttempts + 1
-if loginAttempts > 1 then
-minux.debug("login failed.", "minux")
-if term.isColor() then term.setTextColor(colors.red) end
-print("Login failed. Retrying now (attempt " .. loginAttempts .. ").")
-if term.isColor() then term.setTextColor(colors.white) end
-end
-shell.run("/bin/login.sh")
-end
+  if fs.exists("/etc/minux-main/sys/menulogin.sys") and term.isColor() and not turtle then
+    minux.debug("running gui login for pc", "minux")
+    while _G.validlogin ~= true do
+      term.setBackgroundColor(colors.black)
+      term.setTextColor(colors.white)
+      shell.run("/etc/minux-main/sys/menulogin.sys")
+    end
+  end
+  minux.debug("running login.sh", "minux")
+  local loginAttempts = 0
+  while _G.validlogin ~= true do
+    loginAttempts = loginAttempts + 1
+    if loginAttempts > 1 then
+      minux.debug("login failed.", "minux")
+      withColor(colors.red, function()
+        print("Login failed (attempt " .. loginAttempts .. "). Try again.")
+      end)
+    end
+    shell.run("/bin/login.sh")
+  end
 else
-minux.debug("login disabled", "minux")
-_G.validlogin = true
-_G.admin      = true
-_G.login      = "foo"
-_G.masterpass = "bar"
-minux.runServiceTrigger("login")
+  minux.debug("login disabled", "minux")
+  _G.validlogin = true
+  _G.admin      = true
+  _G.login      = "foo"
+  _G.masterpass = "bar"
+  minux.runServiceTrigger("login")
 end
 
 minux.testcolor()
 
-if firstupdate == true then
-term.clear()
-term.setCursorPos(1, 1)
-print("First run detected, verifying installation.")
--- The post-install check is intentionally network-free: it seeds the
--- per-package manifests under /etc/apt/list/ from the shipped tree under
--- /etc/apt/manifest/ and rebuilds the generated alias/boot/autorun files.
--- A live network refresh remains available via 'apt -U' / 'doctor --repair'.
-local verifyOk, verifyReturn = pcall(apt.postinstall)
-local verifyError
-local verifyErrorAction
-if verifyOk ~= true then
-verifyError = verifyReturn
-verifyErrorAction = "raised"
-minux.debug("firstrun:apt.postinstall crashed: "..tostring(verifyReturn), "minux")
-elseif verifyReturn ~= true then
-verifyError = verifyReturn
-verifyErrorAction = "returned"
-minux.debug("firstrun:apt.postinstall returned: "..tostring(verifyReturn), "minux")
-end
-local verifyResult = verifyOk and verifyReturn == true
-local firstrunMarked = false
--- Always mark the first-run check as done after a single attempt, even when
--- the verify failed.  Otherwise the verify flow re-runs on every subsequent
--- boot, which manifests as an endless "verifying installation" loop for the
--- user.  Failures are reported below and the shipped guidance ('apt -U' /
--- 'doctor --repair') lets the operator retry on demand.
-local firstrunDir = fs.getDir(firstrunFile)
-if firstrunDir ~= "" and not fs.exists(firstrunDir) then
-local firstrunDirOk, firstrunDirError = pcall(fs.makeDir, firstrunDir)
-if not firstrunDirOk then
-minux.debug("firstrun:mkdir failed: "..firstrunDir..": "..tostring(firstrunDirError), "minux")
-end
-if not fs.exists(firstrunDir) then
-minux.debug("firstrun:mkdir left path missing: "..firstrunDir, "minux")
-end
-end
-local tmpfile = fs.open(firstrunFile, "w")
-if tmpfile ~= nil then
-tmpfile.writeLine("done")
-tmpfile.close()
-firstrunMarked = true
-else
-minux.debug("firstrun:write failed: "..firstrunFile, "minux")
-end
-if verifyResult then
-if firstrunMarked ~= true then
-minux.debug("firstrun verification succeeded but marker write failed; continuing without reboot", "minux")
-if term.isColor() then term.setTextColor(colors.yellow) end
-print("Installation verified, but could not record first-run marker at "..firstrunFile..".")
-print("Continuing without rebooting to avoid repeating verification on restart.")
-if term.isColor() then term.setTextColor(colors.white) end
-sleep(3)
-else
-print("Installation verified, rebooting.")
-os.reboot()
-end
-else
-minux.debug("first-run verification failed; continuing without reboot after delay", "minux")
-if term.isColor() then term.setTextColor(colors.red) end
-print("Post-install verification failed.")
-if term.isColor() then term.setTextColor(colors.white) end
-if verifyError ~= nil then
-print("apt postinstall "..verifyErrorAction..": "..tostring(verifyError))
-end
-if firstrunMarked ~= true then
-print("Could not record first-run marker at "..firstrunFile..".")
-end
-print("Run 'apt -U' or 'doctor --repair' after checking your APT sources.")
-print("Continuing without rebooting in 3 seconds.")
-sleep(3)
-end
+-- First-run post-install verification
+if firstupdate then
+  term.clear()
+  term.setCursorPos(1, 1)
+  centeredLine("First Run Setup", "=", colors.cyan)
+  print("")
+
+  local vrRow
+  do
+    write("  Verifying installation  ")
+    local vx, vy = term.getCursorPos()
+    vrRow = vy
+    spinAt(vx, vy, 8)
+  end
+
+  local verifyOk, verifyReturn = pcall(apt.postinstall)
+  local verifyError, verifyErrorAction
+  if verifyOk ~= true then
+    verifyError = verifyReturn
+    verifyErrorAction = "raised"
+    minux.debug("firstrun:apt.postinstall crashed: " .. tostring(verifyReturn), "minux")
+  elseif verifyReturn ~= true then
+    verifyError = verifyReturn
+    verifyErrorAction = "returned"
+    minux.debug("firstrun:apt.postinstall returned: " .. tostring(verifyReturn), "minux")
+  end
+  local verifyResult = verifyOk and verifyReturn == true
+
+  term.setCursorPos(1, vrRow)
+  term.clearLine()
+  bootLine("Verification", verifyResult and "passed" or "failed", verifyResult)
+
+  local firstrunMarked = false
+  local firstrunDir = fs.getDir(firstrunFile)
+  if firstrunDir ~= "" and not fs.exists(firstrunDir) then
+    local ok2, err2 = pcall(fs.makeDir, firstrunDir)
+    if not ok2 then
+      minux.debug("firstrun:mkdir failed: " .. firstrunDir .. ": " .. tostring(err2), "minux")
+    end
+    if not fs.exists(firstrunDir) then
+      minux.debug("firstrun:mkdir left path missing: " .. firstrunDir, "minux")
+    end
+  end
+  local tmpfile = fs.open(firstrunFile, "w")
+  if tmpfile ~= nil then
+    tmpfile.writeLine("done")
+    tmpfile.close()
+    firstrunMarked = true
+  else
+    minux.debug("firstrun:write failed: " .. firstrunFile, "minux")
+  end
+
+  if verifyResult then
+    if not firstrunMarked then
+      minux.debug("firstrun verification succeeded but marker write failed", "minux")
+      withColor(colors.yellow, function()
+        print("  Warning: could not record first-run marker.")
+        print("  Continuing without rebooting.")
+      end)
+      sleep(3)
+    else
+      withColor(colors.lime, function() print("  Installation verified! Rebooting...") end)
+      os.sleep(0.8)
+      os.reboot()
+    end
+  else
+    withColor(colors.red, function() print("  Post-install verification failed.") end)
+    if verifyError ~= nil then
+      print("  apt postinstall " .. verifyErrorAction .. ": " .. tostring(verifyError))
+    end
+    if not firstrunMarked then
+      withColor(colors.yellow, function()
+        print("  Warning: could not record first-run marker at " .. firstrunFile .. ".")
+      end)
+    end
+    print("  Run 'apt -U' or 'doctor --repair' to fix.")
+    withColor(colors.gray, function() print("  Continuing in 3 seconds...") end)
+    sleep(3)
+  end
 end
 
 -- Welcome prompt
+local w = term.getSize()
+withColor(colors.cyan, function() print(string.rep("=", w)) end)
 
 if pocket or turtle then
-print("Hit Enter to start")
+  print(" Welcome to ReMinux!")
+  withColor(colors.gray, function() print(" [Enter] start    [help] commands") end)
 else
-print("Welcome to ReMinux. Hit Enter to start, or type 'help'.")
+  print(" Welcome to ReMinux!")
+  withColor(colors.gray, function()
+    print("   [Enter] continue   [bash] shell   [halt] shutdown   [help] more")
+  end)
 end
+
+withColor(colors.cyan, function() print(string.rep("=", w)) end)
+
 local initput = read()
 while initput ~= nil do
-if initput == "bash" then
-minux.debug("launching prompt", "minux")
-shell.run(bash)
-initput = read()
-elseif initput == "update" then
-apt.update("-f")
-initput = read()
-elseif initput == "reboot" or initput == "restart" then
-shell.run("/bin/restart.sh")
-initput = read()
-elseif initput == "halt" or initput == "shutdown" then
-shell.run("/bin/halt.sh")
-initput = read()
-elseif initput == "help" or initput == "?" then
-print("Available commands:")
-print("  bash             launch the ReMinux shell")
-print("  update           refresh APT packages now")
-print("  restart / reboot reboot the computer")
-print("  halt / shutdown  shut the computer down")
-print("  help / ?         show this message")
-print("Press Enter on its own to continue to the configured UI.")
-initput = read()
-else
-initput = nil
-end
+  if initput == "bash" then
+    minux.debug("launching prompt", "minux")
+    shell.run(bash)
+    initput = read()
+  elseif initput == "update" then
+    apt.update("-f")
+    initput = read()
+  elseif initput == "reboot" or initput == "restart" then
+    shell.run("/bin/restart.sh")
+    initput = read()
+  elseif initput == "halt" or initput == "shutdown" then
+    shell.run("/bin/halt.sh")
+    initput = read()
+  elseif initput == "help" or initput == "?" then
+    print("")
+    withColor(colors.cyan, function() print("Available commands:") end)
+    print("  bash                  launch the ReMinux shell")
+    print("  update                refresh APT packages now")
+    print("  restart / reboot      reboot the computer")
+    print("  halt / shutdown       shut the computer down")
+    print("  help / ?              show this message")
+    print("")
+    withColor(colors.gray, function() print("Press Enter to continue to the configured UI.") end)
+    initput = read()
+  else
+    initput = nil
+  end
 end
 
 -- Launch configured UI
-
 local menuchoice = minux.getconfig("ui")
 if menuchoice == "menu" then
-minux.debug("launching menu", "minux")
-if fs.exists("/bin/minux.sh") then
-shell.run("/bin/minux.sh")
-else
-shell.run(bash)
-end
+  minux.debug("launching menu", "minux")
+  if fs.exists("/bin/minux.sh") then
+    shell.run("/bin/minux.sh")
+  else
+    shell.run(bash)
+  end
 elseif menuchoice == "prompt" then
-minux.debug("launching prompt", "minux")
-shell.run(bash)
+  minux.debug("launching prompt", "minux")
+  shell.run(bash)
 elseif menuchoice == "craftos" then
-minux.debug("launching craftos", "minux")
-shell.run(oldshell)
+  minux.debug("launching craftos", "minux")
+  shell.run(oldshell)
 elseif menuchoice == "workspace" then
-minux.debug("launching workspace", "minux")
-shell.run("/bin/workspace.sh")
+  minux.debug("launching workspace", "minux")
+  shell.run("/bin/workspace.sh")
 else
-shell.run(bash)
+  shell.run(bash)
 end
 
 minux.debug("system crash restart", "minux")

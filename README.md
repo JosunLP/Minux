@@ -37,9 +37,11 @@
 ### Net-installer (recommended)
 
 1. Place the file `tmp/minux_netinstall.lua` onto a ComputerCraft computer's startup slot, **or** run:
-   ```
+
+   ```bash
    wget https://raw.githubusercontent.com/JosunLP/ReMinux/main/tmp/minux_netinstall.lua /startup.lua
    ```
+
 2. Reboot the computer. The graphical installer will guide you through installation type and source selection. By default it prefers the latest GitHub Release from this repository and falls back to `main` when no release is published; you can also point it at a different fork, branch, or any custom raw URL, and the legacy `minux.cc` APT installer is still available as a fallback.
 
 ### Manual installation
@@ -51,7 +53,7 @@
 
 ## Directory structure
 
-```
+```bash
 /
 ├── startup.lua            — Entry point; reads version and launches boot/init.sys
 ├── boot/
@@ -110,84 +112,84 @@
 
 ## Commands
 
-| Command      | Description                                      |
-|--------------|--------------------------------------------------|
-| `apt`        | Manage packages (`-i`, `-r`, `-u`, `-U`, …)      |
-| `bash`       | Open the ReMinux shell; `bash setcolor …` for theme|
-| `cat`        | Print a file; `cat file p` to page               |
-| `config`     | Change system settings (login, ui, debug, …)     |
-| `doctor`     | Audit and repair missing core system state       |
-| `edit`       | Open the text editor                             |
-| `halt`       | Shut down the computer                           |
-| `less`       | Scrollable file viewer (Up/Down/W/S, Ctrl to exit)|
-| `lock`       | Lock the screen until the current password is entered |
-| `login`      | Log in as another user                           |
-| `ls`         | List directory contents (`-a`, `-l`, `-R`, `-d`)       |
-| `makeboot`   | Write the net-installer to a disk drive          |
-| `man`        | Display a manual page; `man list` for all topics |
-| `newtab`     | Open a new workspace tab (advanced computers only)|
-| `passwd`     | Change a user's password                         |
-| `programs`   | List all available programs                      |
-| `restart`    | Reboot the computer                              |
-| `search`     | Compatibility wrapper for substring file search  |
-| `service`    | Manage boot/login services (`list`, `status`, `enable`, …) |
-| `useradd`    | Add a new user                                   |
-| `userdel`    | Delete a user                                    |
-| `usermod`    | Manage local users (add/del/psw)                 |
-| `vix` / `vim`| Vim-like modal editor (F1 inside for help)        |
+| Command       | Description                                                |
+| ------------- | ---------------------------------------------------------- |
+| `apt`         | Manage packages (`-i`, `-r`, `-u`, `-U`, …)                |
+| `bash`        | Open the ReMinux shell; `bash setcolor …` for theme        |
+| `cat`         | Print a file; `cat file p` to page                         |
+| `config`      | Change system settings (login, ui, debug, …)               |
+| `doctor`      | Audit and repair missing core system state                 |
+| `edit`        | Open the text editor                                       |
+| `halt`        | Shut down the computer                                     |
+| `less`        | Scrollable file viewer (Up/Down/W/S, Ctrl to exit)         |
+| `lock`        | Lock the screen until the current password is entered      |
+| `login`       | Log in as another user                                     |
+| `ls`          | List directory contents (`-a`, `-l`, `-R`, `-d`)           |
+| `makeboot`    | Write the net-installer to a disk drive                    |
+| `man`         | Display a manual page; `man list` for all topics           |
+| `newtab`      | Open a new workspace tab (advanced computers only)         |
+| `passwd`      | Change a user's password                                   |
+| `programs`    | List all available programs                                |
+| `restart`     | Reboot the computer                                        |
+| `search`      | Compatibility wrapper for substring file search            |
+| `service`     | Manage boot/login services (`list`, `status`, `enable`, …) |
+| `useradd`     | Add a new user                                             |
+| `userdel`     | Delete a user                                              |
+| `usermod`     | Manage local users (add/del/psw)                           |
+| `vix` / `vim` | Vim-like modal editor (F1 inside for help)                 |
 
 ### GNU-style file & text utilities
 
-| Command  | Description                                       |
-|----------|---------------------------------------------------|
-| `basename` / `dirname` / `realpath` | Path component utilities       |
-| `cal`    | Print a monthly calendar                          |
-| `clear`  | Clear the terminal                                |
-| `cp`     | Copy files or directories                         |
-| `chmod`  | Change permission metadata (`chmod 755 file`)     |
-| `chown`  | Change owner/group metadata (`user[:group]`)      |
-| `cut`    | Extract characters or fields from each line       |
-| `date`   | Print the in-game day and time                    |
-| `df`     | Report free / used disk space                     |
-| `du`     | Disk usage summary (`-s`, `-h`)                   |
-| `echo`   | Print arguments (`-n` to suppress newline)        |
-| `env`    | Show computer environment and shell aliases      |
-| `expr`   | Evaluate an arithmetic expression (`+ - * / % ^ //`) |
-| `factor` | Print prime factors of an integer                 |
-| `find`   | Walk a directory tree (`-name`, `-type`, `-maxdepth`) |
-| `fold`   | Wrap input lines at a column width                |
-| `grep`   | Search files or stdin (`-F`, `-i`, `-n`, `-v`, `-r`) |
-| `head`   | Print the first N lines of a file                 |
-| `id`     | Print user / host / computer-id                   |
-| `mktemp` | Create a unique file under `/tmp`                 |
-| `mkdir`  | Create one or more directories                    |
-| `mv`     | Move or rename files and directories              |
-| `nl`     | Number the lines of a file                        |
-| `printf` | Print formatted output (Lua `string.format`)      |
-| `pwd`    | Print the current working directory               |
-| `rev`    | Reverse the characters of every line              |
-| `rm`     | Remove files; `-r` also removes directories       |
-| `seq`    | Generate a sequence of integers                   |
-| `sort`   | Sort lines (`-r`, `-n`, `-u`)                     |
-| `stat`   | Print file metadata (owner, group, mode, times)   |
-| `tac`    | Print a file in reverse order                     |
-| `tail`   | Print the last N lines of a file                  |
-| `touch`  | Create empty files / ensure they exist            |
-| `tr`     | Translate or delete characters                    |
-| `tree`   | Print a directory tree                            |
-| `uname`  | Print ReMinux/system identification               |
-| `uniq`   | Collapse runs of equal lines (`-c`, `-d`)         |
-| `uptime` | Time since the computer booted                    |
-| `wc`     | Count lines, words and bytes (`-l`, `-w`, `-c`)   |
-| `which`  | Resolve a command/alias to its path               |
-| `whoami` | Print the current logged-in user                  |
-| `xxd` / `hexdump` | Hex+ASCII dump of a file                 |
-| `yes`    | Print a string N times                            |
+| Command                             | Description                                           |
+| ----------------------------------- | ----------------------------------------------------- |
+| `basename` / `dirname` / `realpath` | Path component utilities                              |
+| `cal`                               | Print a monthly calendar                              |
+| `clear`                             | Clear the terminal                                    |
+| `cp`                                | Copy files or directories                             |
+| `chmod`                             | Change permission metadata (`chmod 755 file`)         |
+| `chown`                             | Change owner/group metadata (`user[:group]`)          |
+| `cut`                               | Extract characters or fields from each line           |
+| `date`                              | Print the in-game day and time                        |
+| `df`                                | Report free / used disk space                         |
+| `du`                                | Disk usage summary (`-s`, `-h`)                       |
+| `echo`                              | Print arguments (`-n` to suppress newline)            |
+| `env`                               | Show computer environment and shell aliases           |
+| `expr`                              | Evaluate an arithmetic expression (`+ - * / % ^ //`)  |
+| `factor`                            | Print prime factors of an integer                     |
+| `find`                              | Walk a directory tree (`-name`, `-type`, `-maxdepth`) |
+| `fold`                              | Wrap input lines at a column width                    |
+| `grep`                              | Search files or stdin (`-F`, `-i`, `-n`, `-v`, `-r`)  |
+| `head`                              | Print the first N lines of a file                     |
+| `id`                                | Print user / host / computer-id                       |
+| `mktemp`                            | Create a unique file under `/tmp`                     |
+| `mkdir`                             | Create one or more directories                        |
+| `mv`                                | Move or rename files and directories                  |
+| `nl`                                | Number the lines of a file                            |
+| `printf`                            | Print formatted output (Lua `string.format`)          |
+| `pwd`                               | Print the current working directory                   |
+| `rev`                               | Reverse the characters of every line                  |
+| `rm`                                | Remove files; `-r` also removes directories           |
+| `seq`                               | Generate a sequence of integers                       |
+| `sort`                              | Sort lines (`-r`, `-n`, `-u`)                         |
+| `stat`                              | Print file metadata (owner, group, mode, times)       |
+| `tac`                               | Print a file in reverse order                         |
+| `tail`                              | Print the last N lines of a file                      |
+| `touch`                             | Create empty files / ensure they exist                |
+| `tr`                                | Translate or delete characters                        |
+| `tree`                              | Print a directory tree                                |
+| `uname`                             | Print ReMinux/system identification                   |
+| `uniq`                              | Collapse runs of equal lines (`-c`, `-d`)             |
+| `uptime`                            | Time since the computer booted                        |
+| `wc`                                | Count lines, words and bytes (`-l`, `-w`, `-c`)       |
+| `which`                             | Resolve a command/alias to its path                   |
+| `whoami`                            | Print the current logged-in user                      |
+| `xxd` / `hexdump`                   | Hex+ASCII dump of a file                              |
+| `yes`                               | Print a string N times                                |
 
 ### CC: Tweaked specific tools
 
 | Command       | Description                                                    |
-|---------------|----------------------------------------------------------------|
+| ------------- | -------------------------------------------------------------- |
 | `chat`        | Minimal rednet chat client on protocol `minux-chat`            |
 | `colortest`   | Render the 16 CC colours as labelled swatches                  |
 | `peripherals` | List attached peripherals; `peripherals <side>` shows methods  |
@@ -202,7 +204,7 @@
 
 All system settings are stored in `/usr/minux-main/settings.cfg`. Per-user overrides live in `/home/<user>/minux-config/minux.cfg`. Use the `config` command to change settings:
 
-```
+```bash
 config login    <local|network|disabled>
 config ui       <workspace|menu|prompt|craftos>
 config debug    <disabled|enabled|logging|full>
@@ -219,7 +221,7 @@ config mapcleanup   <enabled|disabled>
 
 ## Package management (APT)
 
-```
+```bash
 apt -i <package>      # Install a package
 apt -r <package>      # Remove a package
 apt -u                # Update all installed packages
@@ -242,14 +244,14 @@ Stable release tags used by the updater should follow `vX.Y.Z`. Suffixed tags su
 
 ReMinux is designed for **CC: Tweaked** and uses only APIs that are present and supported:
 
-| API used              | CC:Tweaked status |
-|-----------------------|-------------------|
-| `fs`, `term`, `keys`  | ✅ Stable          |
-| `http.get`, `http.checkURL` | ✅ Stable   |
-| `peripheral`, `rednet`| ✅ Stable          |
-| `os.loadAPI()`        | ⚠️ Deprecated but retained for compatibility |
-| `shell.openTab()`     | ✅ Available in shell environments with multishell/tab support |
-| `window.create()`     | ✅ Stable          |
+| API used                    | CC:Tweaked status                                             |
+| --------------------------- | ------------------------------------------------------------- |
+| `fs`, `term`, `keys`        | ✅ Stable                                                      |
+| `http.get`, `http.checkURL` | ✅ Stable                                                      |
+| `peripheral`, `rednet`      | ✅ Stable                                                      |
+| `os.loadAPI()`              | ⚠️ Deprecated but retained for compatibility                   |
+| `shell.openTab()`           | ✅ Available in shell environments with multishell/tab support |
+| `window.create()`           | ✅ Stable                                                      |
 
 > **Note:** `os.loadAPI()` is deprecated in CC: Tweaked in favour of `require()`. ReMinux retains it for backwards compatibility with older package scripts but new internal code uses explicit table returns where possible.
 >
