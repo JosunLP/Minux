@@ -30,14 +30,14 @@ end
 local pattern = args[cursor]
 if pattern == nil then
 	print("grep: no pattern given")
-	return 0
+	return false
 end
 if caseInsensitive == true then pattern = string.lower(pattern) end
 if fixedString ~= true then
 	local ok = pcall(string.find, "", pattern)
 	if ok ~= true then
 		print("grep: invalid Lua pattern")
-		return 0
+		return false
 	end
 end
 
@@ -97,7 +97,7 @@ end
 if #files == 0 then
 	if type(stdinLines) ~= "table" then
 		print("grep: no input files")
-		return 0
+		return false
 	end
 	addSource("stdin", stdinLines, "(standard input)")
 else

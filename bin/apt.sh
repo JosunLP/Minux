@@ -265,7 +265,11 @@ elseif command == "-c" then
 elseif command == "-a" then
   if requirePackage("-a") ~= true then return false end
   if requireAdmin("-a") ~= true then return false end
-  minux.config("update", packageName)
+  local ok = minux.setconfig("update", packageName)
+  if ok ~= true then
+    err("failed to apply auto-update setting '" .. packageName .. "'")
+    return false
+  end
   success = true
 
 elseif command == "-ls" then

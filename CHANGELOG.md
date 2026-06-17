@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [3.2.0] - 2026-06-17
+
 ### Added
 
 - `neofetch` command (`/bin/neofetch.sh`): classic system-info display
@@ -45,6 +47,9 @@ All notable changes to this project will be documented in this file.
     returns a clear error instead of passing `nil` to `apt.packageinfo`.
   - **Bug fix**: `apt -U` (force-update-all) now correctly requires admin
     privileges, matching all other write operations.
+  - **Critical bug fix**: `apt -a <mode>` no longer crashes with "attempt
+    to call nil value" — called non-existent `minux.config()` instead of
+    `minux.setconfig()`.
 - **`doctor`** (`bin/doctor.sh`):
   - A brief scan animation plays before findings are listed.
   - Findings use short symbols (`!!` error, `??` warning, `++` fixed) in
@@ -61,6 +66,8 @@ All notable changes to this project will be documented in this file.
     applicable.
   - Version, in-game day/time, and host binary string are included in the
     system section.
+  - Disk usage bar now uses `fs.getCapacity()` for accurate total instead
+    of a hard-coded 1 MB fallback.
 - **`config`** (`bin/config.sh`):
   - `config` (no args) uses dot-fill alignment for all settings and
     colour-codes values (lime = enabled, gray = disabled, cyan = network).
@@ -73,6 +80,14 @@ All notable changes to this project will be documented in this file.
   - Prompts and result lines are consistently indented.
 - **`welcome.sys`**: a black status bar is drawn at the bottom of the
   welcome screen showing the current user and a command hint.
+- **`ls`** (`bin/ls.sh`): directories are now coloured `lightBlue` and
+  files `white` on colour terminals for instant visual distinction.
+- **`neofetch`** ASCII logo lines are now all the same width (9 chars),
+  preventing info-column misalignment on different terminal sizes.
+- **`man`** (`bin/man.sh`): page path is passed as a separate argument to
+  `less` so filenames containing spaces open correctly.
+- **`workspace`** (`bin/workspace.sh`): removed a misleading `-- sleep bug`
+  comment that no longer reflected the code.
 
 ### Fixed
 
@@ -85,6 +100,32 @@ All notable changes to this project will be documented in this file.
   missing per-package manifests at the start of the run so a freshly
   installed system can be refreshed from the network without first
   hitting "installed package missing local manifest" failures.
+- **Security**: `usermod` now refuses to delete the currently logged-in
+  user's own account (self-deletion guard).
+- **Security**: `useradd`, `userdel`, and `passwd` now treat a `nil`
+  return from auth API functions as failure (`== true` check) instead of
+  silently accepting it as success.
+- **Error exit codes** — the following commands previously returned `0`
+  (truthy in Lua = success) on error paths, breaking `&&`/`||` pipelines;
+  all now return `false`:
+  - `grep` (no pattern, invalid pattern, no input files)
+  - `df`, `stat`, `du` (path not found)
+  - `cut`, `tr`, `fold` (missing args, file not found)
+  - `tac`, `xxd`, `rev`, `nl`, `uniq` (file not found)
+  - `seq` (invalid numeric arguments)
+  - `search`, `tree` (path not found)
+  - `rs` (API unavailable, invalid side, level out of range, bundled cables unsupported)
+  - `expr` (invalid characters, parse error, evaluation error)
+  - `chat`, `ping` (API unavailable, no modem)
+  - `speak` (peripheral API unavailable)
+- **Help flag consistency**: `--help` (and `-h` where missing) now
+  accepted by `df`, `uptime`, `uname`, `head`, `tail`, `wc`, `sort`,
+  `cut`, `cat`, `less`, `stat`, `du`, `seq`, `date`, `tac`.
+- **Colour consistency**: success output in `passwd`, `bash`, `service`,
+  `usermod`, `useradd`, and `userdel` now uses `colors.lime` (bright
+  green) matching the rest of the codebase instead of the darker
+  `colors.green`.
+- Bumped project package version to 3.2.0.
 
 ### API
 

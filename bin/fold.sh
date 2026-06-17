@@ -16,11 +16,11 @@ end
 local target = shell.resolve(args[cursor] or "")
 if fs.exists(target) == false or fs.isDir(target) then
 	print("fold: not a file: " .. tostring(target))
-	return 0
+	return false
 end
 if width < 1 then
 	print("fold: width must be >= 1")
-	return 0
+	return false
 end
 
 local handle = fs.open(target, "r")

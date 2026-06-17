@@ -21,7 +21,7 @@ end)
 end
 
 local function ok(message)
-withColor(colors.green, function()
+withColor(colors.lime, function()
 print("usermod: " .. message)
 end)
 end
@@ -140,6 +140,10 @@ return false
 end
 if username == "root" then
 err("cannot delete the root user")
+return false
+end
+if _G.login ~= nil and username == _G.login then
+err("cannot delete your own account")
 return false
 end
 fs.delete(userPath)

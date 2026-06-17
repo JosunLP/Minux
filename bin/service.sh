@@ -19,7 +19,7 @@ end)
 end
 
 local function ok(message)
-withColor(colors.green, function()
+withColor(colors.lime, function()
 print("service: " .. message)
 end)
 end

@@ -1,6 +1,6 @@
 -- uptime: print the time the computer has been running since boot.
 local args = { ... }
-if args[1] == "?" or args[1] == "help" then
+if args[1] == "?" or args[1] == "help" or args[1] == "-h" or args[1] == "--help" then
 	print("Usage: uptime")
 	print("Print elapsed real-time and in-game time since boot.")
 	return 0

@@ -2,7 +2,7 @@
 local args = { ... }
 local format = args[1]
 
-if format == "?" or format == "help" then
+if format == "?" or format == "help" or format == "-h" or format == "--help" then
 	print("Usage: date [format]")
 	print("  format  Lua os.date format string (defaults to '%c')")
 	print("Without arguments, prints in-game day and time-of-day.")

@@ -21,13 +21,13 @@ else
 end
 if set1 == nil or fileArg == nil or (deleteMode == false and set2 == nil) then
 	print("tr: missing arguments")
-	return 0
+	return false
 end
 
 local target = shell.resolve(fileArg)
 if fs.exists(target) == false or fs.isDir(target) then
 	print("tr: not a file: " .. target)
-	return 0
+	return false
 end
 
 local mapping = {}

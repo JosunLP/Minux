@@ -80,7 +80,7 @@ end)
 print("Hint: 'apt -i auth-client' to install the network auth client.")
 return false
 end
-ok = auth.setpass(newusername, newpassword) ~= false
+ok = auth.setpass(newusername, newpassword) == true
 elseif authtype == "local" then
 ok = runUsermod("psw", newusername, newpassword)
 printedByUsermod = true
@@ -95,7 +95,7 @@ if ok ~= true then
 return false
 end
 if printedByUsermod ~= true then
-withColor(colors.green, function()
+withColor(colors.lime, function()
 print("passwd: password updated for '" .. newusername .. "'")
 end)
 end

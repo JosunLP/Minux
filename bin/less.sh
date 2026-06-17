@@ -2,7 +2,7 @@
 local args     = { ... }
 local filename = args[1]
 
-if filename == "?" or filename == "help" then
+if filename == "?" or filename == "help" or filename == "-h" or filename == "--help" then
 print("less, /bin/less.sh")
 print("Scrollable text-file viewer")
 print("Usage: less <filename>")

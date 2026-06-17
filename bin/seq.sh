@@ -1,6 +1,6 @@
 -- seq: print a sequence of integers.
 local args = { ... }
-if args[1] == nil or args[1] == "?" or args[1] == "help" then
+if args[1] == nil or args[1] == "?" or args[1] == "help" or args[1] == "--help" then
 	print("Usage: seq [first [step]] last")
 	print("Print integers from <first> (default 1) to <last>, stepping by <step>.")
 	return 0
@@ -16,8 +16,8 @@ else
 end
 
 if first == nil or step == nil or last == nil or step == 0 then
-	print("Invalid numeric arguments.")
-	return 0
+	print("seq: invalid numeric arguments")
+	return false
 end
 
 local index = first

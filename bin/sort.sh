@@ -1,6 +1,6 @@
 -- sort: read lines of one or more files and print them sorted.
 local args = { ... }
-if args[1] == nil or args[1] == "?" or args[1] == "help" then
+if args[1] == nil or args[1] == "?" or args[1] == "help" or args[1] == "--help" then
 	print("Usage: sort [-r] [-n] [-u] <file> [file...]")
 	print("  -r  reverse order")
 	print("  -n  numeric sort")

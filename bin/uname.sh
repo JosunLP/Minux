@@ -20,7 +20,7 @@ local function printAll()
 	print("Arch   : " .. arch)
 end
 
-if flag == "?" or flag == "help" then
+if flag == "?" or flag == "help" or flag == "-h" or flag == "--help" then
 	print("Usage: uname [-a|-s|-r|-n|-m]")
 	print("  -a  all (default)")
 	print("  -s  kernel/system name")

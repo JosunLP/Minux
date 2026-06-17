@@ -14,7 +14,7 @@ if args[1] == "-ba" then numberAll = true cursor = 2 end
 local target = shell.resolve(args[cursor] or "")
 if fs.exists(target) == false or fs.isDir(target) then
 	print("nl: not a file: " .. tostring(target))
-	return 0
+	return false
 end
 
 local handle = fs.open(target, "r")

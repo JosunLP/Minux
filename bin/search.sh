@@ -10,7 +10,7 @@ end
 local resolved = shell.resolve(startPath)
 if fs.exists(resolved) ~= true then
 	print("search: no such path: " .. resolved)
-	return 0
+	return false
 end
 
 local results = minux.findEntries(resolved, {

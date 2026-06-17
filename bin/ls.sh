@@ -44,14 +44,22 @@ end
 
 local function emitEntry(entry, displayName)
 	if longFormat == true then
+		if term.isColor() then
+			term.setTextColor(entry.isDir and colors.lightBlue or colors.white)
+		end
 		minux.writeOutputLine(string.format("%-10s %-8s %-8s %8s %s",
 			entry.mode or "----------",
 			entry.owner or "-",
 			entry.group or "-",
 			formatSize(entry.size),
 			displayName))
+		if term.isColor() then term.setTextColor(colors.white) end
 	else
+		if term.isColor() then
+			term.setTextColor(entry.isDir and colors.lightBlue or colors.white)
+		end
 		minux.writeOutputLine(displayName)
+		if term.isColor() then term.setTextColor(colors.white) end
 	end
 end
 

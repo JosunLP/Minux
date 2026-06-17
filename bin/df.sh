@@ -1,7 +1,7 @@
 -- df: report filesystem disk usage.
 local args = { ... }
 
-if args[1] == "?" or args[1] == "help" then
+if args[1] == "?" or args[1] == "help" or args[1] == "-h" or args[1] == "--help" then
 	print("Usage: df [path]")
 	print("Reports total, used, and free space for the filesystem")
 	print("containing <path> (or '/').")
@@ -12,8 +12,8 @@ local path = args[1] or "/"
 path = shell.resolve(path)
 
 if fs.exists(path) == false then
-	print("Path does not exist: " .. path)
-	return 0
+	print("df: " .. path .. ": no such file or directory")
+	return false
 end
 
 local function fmt(bytes)

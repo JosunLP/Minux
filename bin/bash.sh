@@ -62,7 +62,7 @@ print("bash setcolor: failed to write colour configuration")
 end)
 return false
 end
-withColor(colors.green, function()
+withColor(colors.lime, function()
 print(string.format("bash: colours set (text=%s bg=%s prompt=%s)",
 txtcolor, bgcolor, prmcolor))
 end)

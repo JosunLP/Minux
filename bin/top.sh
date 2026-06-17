@@ -106,8 +106,9 @@ if free ~= nil then
   end
   infoLine("Free disk", formatDisk(free), diskColor)
   -- Mini usage bar
-  local totalGuess = 1024 * 1024  -- CC default ~1 MB
-  local usedPct = math.min(100, math.max(0, math.floor((1 - free / totalGuess) * 100)))
+  local total = (fs.getCapacity and fs.getCapacity("/")) or (1024 * 1024)
+  if total == nil or total <= 0 then total = 1024 * 1024 end
+  local usedPct = math.min(100, math.max(0, math.floor((1 - free / total) * 100)))
   local w = term.getSize()
   local barWidth = math.min(20, w - 16)
   local filled = math.floor(barWidth * usedPct / 100)

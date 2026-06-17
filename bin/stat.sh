@@ -1,6 +1,6 @@
 -- stat: display metadata about a file or directory.
 local args = { ... }
-if args[1] == nil or args[1] == "?" or args[1] == "help" then
+if args[1] == nil or args[1] == "?" or args[1] == "help" or args[1] == "-h" or args[1] == "--help" then
 	print("Usage: stat <path>")
 	print("Print type, owner, group, mode and timestamps.")
 	return 0
@@ -10,7 +10,7 @@ local target = shell.resolve(args[1])
 local info = minux.pathInfo(target)
 if info == nil then
 	print("stat: no such path: " .. target)
-	return 0
+	return false
 end
 
 local function fmt(bytes)

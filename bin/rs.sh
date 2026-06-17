@@ -15,7 +15,7 @@ end
 
 if rs == nil and redstone == nil then
 	print("rs: redstone API not available")
-	return 0
+	return false
 end
 local api = rs or redstone
 
@@ -44,21 +44,21 @@ local command = args[1]
 local side = args[2]
 
 if command == "get" then
-	if isSide(side) == false then print("rs: invalid side") return 0 end
+	if isSide(side) == false then print("rs: invalid side") return false end
 	local on  = api.getInput(side)
 	local lvl = api.getAnalogInput and api.getAnalogInput(side) or (on and 15 or 0)
 	print(string.format("%s: on=%s analog=%d", side, tostring(on), lvl))
 elseif command == "on" then
-	if isSide(side) == false then print("rs: invalid side") return 0 end
+	if isSide(side) == false then print("rs: invalid side") return false end
 	api.setOutput(side, true)
 elseif command == "off" then
-	if isSide(side) == false then print("rs: invalid side") return 0 end
+	if isSide(side) == false then print("rs: invalid side") return false end
 	api.setOutput(side, false)
 elseif command == "set" then
-	if isSide(side) == false then print("rs: invalid side") return 0 end
+	if isSide(side) == false then print("rs: invalid side") return false end
 	local level = tonumber(args[3])
 	if level == nil or level < 0 or level > 15 then
-		print("rs: level must be 0..15") return 0
+		print("rs: level must be 0..15") return false
 	end
 	if api.setAnalogOutput ~= nil then
 		api.setAnalogOutput(side, math.floor(level))
@@ -66,16 +66,16 @@ elseif command == "set" then
 		api.setOutput(side, level > 0)
 	end
 elseif command == "pulse" then
-	if isSide(side) == false then print("rs: invalid side") return 0 end
+	if isSide(side) == false then print("rs: invalid side") return false end
 	local duration = tonumber(args[3]) or 0.2
 	api.setOutput(side, true)
 	sleep(duration)
 	api.setOutput(side, false)
 elseif command == "bundled" then
-	if isSide(side) == false then print("rs: invalid side") return 0 end
+	if isSide(side) == false then print("rs: invalid side") return false end
 	if api.getBundledInput == nil then
 		print("rs: bundled cables not supported on this side")
-		return 0
+		return false
 	end
 	local mask = api.getBundledInput(side)
 	local colourNames = {

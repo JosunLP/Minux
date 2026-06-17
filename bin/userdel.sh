@@ -85,7 +85,7 @@ end)
 print("Hint: 'apt -i auth-client' to install the network auth client.")
 return false
 end
-ok = auth.userdel(newusername) ~= false
+ok = auth.userdel(newusername) == true
 elseif authtype == "local" then
 ok = runUsermod("del", newusername)
 printedByUsermod = true
@@ -100,7 +100,7 @@ if ok ~= true then
 return false
 end
 if printedByUsermod ~= true then
-withColor(colors.green, function()
+withColor(colors.lime, function()
 print("userdel: removed user '" .. newusername .. "'")
 end)
 end

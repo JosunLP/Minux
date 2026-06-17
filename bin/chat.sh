@@ -12,7 +12,7 @@ end
 
 if rednet == nil then
 	print("chat: rednet API not available")
-	return 0
+	return false
 end
 
 local nick = args[1] or os.getComputerLabel() or ("user-" .. os.getComputerID())
@@ -28,7 +28,7 @@ if rednet.isOpen == nil or rednet.isOpen() == false then
 	end
 	if opened == nil then
 		print("chat: no modem attached")
-		return 0
+		return false
 	end
 end
 

@@ -1,6 +1,6 @@
 -- du: report disk usage of files and directories.
 local args = { ... }
-if args[1] == "?" or args[1] == "help" then
+if args[1] == "?" or args[1] == "help" or args[1] == "--help" then
 	print("Usage: du [-s] [-h] [path]")
 	print("  -s  summary only (no per-subdirectory output)")
 	print("  -h  human-readable sizes (KB / MB)")
@@ -19,7 +19,7 @@ local root = args[cursor] or "."
 root = shell.resolve(root)
 if fs.exists(root) == false then
 	print("du: no such path: " .. root)
-	return 0
+	return false
 end
 
 local function formatSize(bytes)

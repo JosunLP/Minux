@@ -12,7 +12,7 @@ end
 
 if peripheral == nil then
 	print("speak: peripheral API not available")
-	return 0
+	return false
 end
 
 local side, text

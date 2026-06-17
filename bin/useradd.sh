@@ -77,7 +77,7 @@ end)
 print("Hint: 'apt -i auth-client' to install the network auth client.")
 return false
 end
-ok = auth.useradd(newusername, newpassword) ~= false
+ok = auth.useradd(newusername, newpassword) == true
 elseif authtype == "local" then
 ok = runUsermod("add", newusername, newpassword)
 printedByUsermod = true
@@ -92,7 +92,7 @@ if ok ~= true then
 return false
 end
 if printedByUsermod ~= true then
-withColor(colors.green, function()
+withColor(colors.lime, function()
 print("useradd: created user '" .. newusername .. "'")
 end)
 end

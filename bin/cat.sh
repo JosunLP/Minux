@@ -3,7 +3,7 @@ local args     = { ... }
 local filename = args[1]
 local option   = args[2]
 
-if filename == "?" or filename == "help" then
+if filename == "?" or filename == "help" or filename == "-h" or filename == "--help" then
 print("cat, /bin/cat.sh")
 print("Print a text file to the screen")
 print("Usage: cat <filename> [p]")

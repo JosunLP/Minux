@@ -1,6 +1,6 @@
 -- cut: extract sections from each line of a file.
 local args = { ... }
-if args[1] == nil or args[1] == "?" or args[1] == "help" then
+if args[1] == nil or args[1] == "?" or args[1] == "help" or args[1] == "--help" then
 	print("Usage:")
 	print("  cut -c <ranges> <file>           cut by character positions")
 	print("  cut -d <delim> -f <ranges> <file> cut by delimited field")
@@ -19,7 +19,7 @@ while cursor <= #args do
 end
 if mode == nil or fileArg == nil then
 	print("cut: missing -c/-f or file argument")
-	return 0
+	return false
 end
 if mode == "field" and (delim == nil or delim == "") then delim = "\t" end
 
@@ -46,7 +46,7 @@ end
 local target = shell.resolve(fileArg)
 if fs.exists(target) == false or fs.isDir(target) then
 	print("cut: not a file: " .. target)
-	return 0
+	return false
 end
 
 local handle = fs.open(target, "r")

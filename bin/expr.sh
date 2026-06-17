@@ -10,8 +10,8 @@ end
 
 local expression = table.concat(args, " ")
 if expression:find("[^%d%s%+%-%*%/%%%^%(%)%.]") ~= nil then
-	print("Invalid characters in expression.")
-	return 0
+	print("expr: invalid characters in expression")
+	return false
 end
 
 -- Integer division: rewrite "a // b" -> "math.floor((a)/(b))" in either
@@ -26,13 +26,13 @@ local lua = rewriteIdiv("(" .. expression .. ")")
 
 local chunk, err = loadstring("return " .. lua)
 if chunk == nil then
-	print("Parse error: " .. tostring(err))
-	return 0
+	print("expr: parse error: " .. tostring(err))
+	return false
 end
 setfenv(chunk, { math = math })
 local ok, result = pcall(chunk)
 if ok == false then
-	print("Evaluation error: " .. tostring(result))
-	return 0
+	print("expr: evaluation error: " .. tostring(result))
+	return false
 end
 print(result)

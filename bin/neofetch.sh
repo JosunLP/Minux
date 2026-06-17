@@ -19,11 +19,11 @@ end
 
 local w = term.getSize()
 
--- ASCII art logo (fits 26-col pocket & 51-col desktop)
+-- ASCII art logo: 9 chars wide, 6 rows (fits 26-col pocket & 51-col desktop)
 local LOGO = {
   "  .---.  ",
-  " /  ___\\ ",
-  "| (___) |",
+  " /  ^  \\ ",
+  "| (o o) |",
   " \\_____/ ",
   "  |   |  ",
   " /|   |\\ ",

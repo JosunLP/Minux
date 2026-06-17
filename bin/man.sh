@@ -19,4 +19,4 @@ shell.run("ls /etc/man/")
 return false
 end
 
-shell.run("/bin/less.sh " .. manpath)
+shell.run("/bin/less.sh", manpath)

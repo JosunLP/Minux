@@ -9,7 +9,7 @@ end
 local target = shell.resolve(args[1])
 if fs.exists(target) == false or fs.isDir(target) then
 	print("rev: not a file: " .. target)
-	return 0
+	return false
 end
 
 local handle = fs.open(target, "r")

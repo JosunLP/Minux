@@ -15,8 +15,8 @@ else
 end
 
 if fs.exists(root) == false then
-	print("Path does not exist: " .. root)
-	return 0
+	print("tree: no such path: " .. root)
+	return false
 end
 if fs.isDir(root) == false then
 	print(root)

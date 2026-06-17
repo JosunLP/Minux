@@ -1,7 +1,7 @@
 -- tail: print the last N lines (default 10) of a file.
 local args = { ... }
 
-if args[1] == "?" or args[1] == "help" then
+if args[1] == "?" or args[1] == "help" or args[1] == "--help" then
 	print("Usage: tail [-n <count>] <file>")
 	print("Defaults to 10 lines.")
 	return 0

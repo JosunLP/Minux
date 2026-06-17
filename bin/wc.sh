@@ -1,7 +1,7 @@
 -- wc: count lines, words, and bytes in one or more files.
 local args = { ... }
 
-if args[1] == nil or args[1] == "?" or args[1] == "help" then
+if args[1] == nil or args[1] == "?" or args[1] == "help" or args[1] == "--help" then
 	print("Usage: wc [-l|-w|-c] <file> [file...]")
 	print("  -l  show line count only")
 	print("  -w  show word count only")

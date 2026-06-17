@@ -9,7 +9,7 @@ end
 
 if rednet == nil then
 	print("ping: rednet API not available")
-	return 0
+	return false
 end
 
 local timeout = tonumber(args[1]) or 2
@@ -25,7 +25,7 @@ if rednet.isOpen == nil or rednet.isOpen() == false then
 	end
 	if opened == nil then
 		print("ping: no modem attached")
-		return 0
+		return false
 	end
 end
 
